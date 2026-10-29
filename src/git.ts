@@ -115,6 +115,21 @@ const postProcessBranches =
       });
   };
 
+// Parse a `git log|rev-list --oneline` line: abbreviated hashes are not
+// always 7 characters long, so split on the first space instead of using a
+// fixed offset.
+const parseOnelineCommit = (line: string): Fig.Suggestion | null => {
+  const separatorIndex = line.indexOf(" ");
+  if (separatorIndex === -1) {
+    return null;
+  }
+  return {
+    name: line.slice(0, separatorIndex),
+    icon: "fig://icon?type=node",
+    description: line.slice(separatorIndex + 1),
+  };
+};
+
 export const gitGenerators: Record<string, Fig.Generator> = {
   // Commit history
   commits: {
@@ -126,13 +141,11 @@ export const gitGenerators: Record<string, Fig.Generator> = {
         return [];
       }
 
-      return output.split("\n").map((line) => {
-        return {
-          name: line.substring(0, 7),
-          icon: "fig://icon?type=node",
-          description: line.substring(7),
-        };
-      });
+      return output
+        .split("\n")
+        .filter(Boolean)
+        .map(parseOnelineCommit)
+        .filter(Boolean);
     },
   },
 
@@ -172,13 +185,11 @@ export const gitGenerators: Record<string, Fig.Generator> = {
         return [];
       }
 
-      return output.split("\n").map((line) => {
-        return {
-          name: line.substring(0, 7),
-          icon: "fig://icon?type=node",
-          description: line.substring(7),
-        };
-      });
+      return output
+        .split("\n")
+        .filter(Boolean)
+        .map(parseOnelineCommit)
+        .filter(Boolean);
     },
   },
 
