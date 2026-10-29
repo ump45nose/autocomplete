@@ -5,12 +5,14 @@ const completionSpec: Fig.Spec = {
   name: "task",
   // loadSpec doesn't work for root commands (https://github.com/withfig/autocomplete/issues/223)
   generateSpec: async (_tokens, executeShellCommand) => {
+    // `task --version` stopped printing the "Task version:" prefix in
+    // go-task 3.43.0, so tell the two CLIs apart by their `version`
+    // subcommand output: taskwarrior prints a banner that names Taskwarrior.
     const { stdout } = await executeShellCommand({
       command: "task",
-      // eslint-disable-next-line @withfig/fig-linter/no-useless-arrays
-      args: ["--version"],
+      args: "version",
     });
-    return stdout.includes("Task") ? goTask : taskWarrior;
+    return stdout.includes("Taskwarrior") ? taskWarrior : goTask;
   },
 };
 
