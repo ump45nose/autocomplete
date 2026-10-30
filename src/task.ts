@@ -10,7 +10,19 @@ const completionSpec: Fig.Spec = {
       // eslint-disable-next-line @withfig/fig-linter/no-useless-arrays
       args: ["--version"],
     });
-    return stdout.includes("Task") ? goTask : taskWarrior;
+    // go-task prints "Task version: vX.Y.Z"; taskwarrior prints a bare version
+    if (/task version/i.test(stdout)) {
+      return goTask;
+    }
+    // When the version probe is inconclusive (e.g. it failed or produced no
+    // output), fall back to the help output: only go-task documents a
+    // --taskfile flag
+    const { stdout: helpOut } = await executeShellCommand({
+      command: "task",
+      // eslint-disable-next-line @withfig/fig-linter/no-useless-arrays
+      args: ["--help"],
+    });
+    return /--taskfile|task version/i.test(helpOut) ? goTask : taskWarrior;
   },
 };
 
